@@ -1,7 +1,6 @@
-// Creamos la primera esena del juego, (PRUEBA)
-class scene1 extends Phaser.Scene {
+class new3 extends Phaser.Scene {
     constructor(){
-        super({key: "scene1"})
+        super({key: "new3"})
     }
 
     // carga de archivos
@@ -10,7 +9,7 @@ class scene1 extends Phaser.Scene {
         // sprites principales
         this.load.image('sky','assets/sky.png');
         this.load.image('ground','assets/ground.png');
-        this.load.image('text0','assets/hello.png');
+        this.load.image('text1','assets/whatshtml.png');
 
         // spritessheets
         this.load.spritesheet('duderr', 'assets/runr.png', { frameWidth: 250, frameHeight: 82 });
@@ -23,35 +22,75 @@ class scene1 extends Phaser.Scene {
 
     // creacion de elementos en la pantalla
     create(){
-        const contenidop = document.getElementById('contenidop');
+        this.contenidop = document.getElementById('contenidop');
         this.contador = 0;
-        this.pugsT = 1;
+        this.pugsT = 2;
         // creacion del cielo
         this.add.image(0, 0, 'sky').setOrigin(0, 0);
         // creacion del suelo ademas de crear el arrow plaforms
         this.platforms = this.physics.add.staticGroup();
         this.platforms.create(0, 650, 'ground').setScale(1.85).setSize(0,115).setOffset(385,-25);
-        this.platforms.create(50, 350, 'ground').setScale(0.3).setSize(275,20).setOffset(325,22);
-        this.platforms.create(300, 500, 'ground').setScale(0.3).setSize(275,20).setOffset(325,22);
+        // Creacion de las plataformas dinamicas, horizontal y vertical
+        this.plataformaX = this.physics.add.image(300, 500, 'ground').setImmovable(true).setVelocityX(50);
+        this.plataformaX.setScale(0.2).setSize(940,60).setOffset(0,0)
+        this.plataformaX.body.allowGravity = false;
+        // Tween para mover de un lado a otro
+        this.tweens.add({
+            targets: this.plataformaX,
+            x: 500,               
+            ease: 'Linear',
+            duration: 2000,       
+            yoyo: true,           
+            repeat: -1           
+        });
+        this.plataformaY = this.physics.add.image(100, 500, 'ground').setImmovable(true).setVelocityY(50);
+        this.plataformaY.setScale(0.2).setSize(940,60).setOffset(0,0)
+        this.plataformaY.setImmovable(true);
+        this.plataformaY.body.allowGravity = false;
+        this.plataformaY2 = this.physics.add.image(750, 500, 'ground').setImmovable(true).setVelocityY(50);
+        this.plataformaY2.setScale(0.2).setSize(940,60).setOffset(0,0)
+        this.plataformaY2.setImmovable(true);
+        this.plataformaY2.body.allowGravity = false;
+        // Tween para mover de un lado a otro
+        this.tweens.add({
+            targets: this.plataformaY,
+            y: 300,              
+            ease: 'Linear',
+            duration: 2000,       
+            yoyo: true,           
+            repeat: -1            
+        });
+        this.tweens.add({
+            targets: this.plataformaY2,
+            y: 225,              
+            ease: 'Linear',
+            duration: 2000,       
+            yoyo: true,           
+            repeat: -1            
+        });
         // creacion del texto que dara la bienvenida al primer nivel
-        this.platforms.create(645, 435, 'text0').setScale(1).setSize(403, 345).setOffset(0, 20);
+        this.add.image(400, 225, 'text1');
 
         
         // creamos un objeto inmovible para la puerta y poder interactuar con ella
         this.door = this.physics.add.sprite(700, 182, 'door').setImmovable(true);
-        this.door.setScale(0.7);
+        this.door.setScale(0.5);
         this.door.body.allowGravity = false;
         
 
         // creamos la posicion del personaje, aqui como no tengo un mainsprite use el de la derecha para comenzar el juego
-        this.player = this.physics.add.sprite(0, 100, 'duderr');
+        this.player = this.physics.add.sprite(0, 550, 'duderr').setScale(0.8);
+        this.player.body.setGravityY(150);
         this.player.setCollideWorldBounds(true);
-        this.player.setBounce(0.2);
+        this.player.setBounce(0);
 
         // creamos al pug como objeto coleccionable
-        this.pug = this.physics.add.sprite(400, 574 , 'pug').setScale(2);
+        this.pug = this.physics.add.sprite(800, 574 , 'pug').setScale(1);
         this.pug.body.allowGravity = false;
         this.pug.setBounce(0);
+        this.pug2 = this.physics.add.sprite(100, 200 , 'pug').setScale(1);
+        this.pug2.body.allowGravity = false;
+        this.pug2.setBounce(0);
 
         
         // aqui comenzamos a crear las animaciones de cada spritesheet
@@ -91,13 +130,19 @@ class scene1 extends Phaser.Scene {
         });
 
         this.pug.anims.play('pugAnim', true);
+        this.pug2.anims.play('pugAnim', true);
         
         // creamos las conexiones de colision
         this.physics.add.collider(this.door, this.platforms);
         this.physics.add.collider(this.player, this.platforms);
+        this.physics.add.collider(this.player, this.plataformaX);
+        this.physics.add.collider(this.player, this.plataformaY);
+        this.physics.add.collider(this.player, this.plataformaY2);
+
 
         // Detectar cuando el jugador toca al pug
         this.physics.add.overlap(this.player, this.pug, this.collectpug, null, this);
+        this.physics.add.overlap(this.player, this.pug2, this.collectpug2, null, this);
 
         // creamos las teclas de movimiento
         this.cursor = this.input.keyboard.createCursorKeys();
@@ -107,7 +152,7 @@ class scene1 extends Phaser.Scene {
         this.doorOpened = false;
 
         // creamos una variable la cual se traducira a html
-        contenidop.innerHTML = '<p class="mensaje">Pugs encontrados<br><b>' + this.contador + '/' + this.pugsT + '</b></p>';
+        this.contenidop.innerHTML = '<p class="mensaje">Pugs encontrados<br><b>' + this.contador + '/' + this.pugsT + '</b></p>';
     }
 
     update(){
@@ -136,19 +181,31 @@ class scene1 extends Phaser.Scene {
                 this.doorOpened = true;
                 this.door.play('openDoor');
                 this.door.once('animationcomplete', () => {
-                this.scene.start('scene2');
+                this.scene.start('scene3');
         })   }else{
             alert('no tienes los pugs suficientes')
         }
         
     }
+    // Verificamos si el jugador está sobre la plataforma
+        if (this.player.body.touching.down && this.plataformaY.body.touching.up && this.player.y < this.plataformaY.y) {
+            this.player.y += this.plataformaY.body.velocity.y * this.game.loop.delta / 1000;
+        }
+        if (this.player.body.touching.down && this.plataformaX.body.touching.up && this.player.y < this.plataformaX.y) {
+            this.player.x += this.plataformaX.body.velocity.x * this.game.loop.delta / 1000;
+        }
     }
     // función para recolectar el pug
     collectpug(player, pug) {
         pug.disableBody(true, true);
         this.contador++;
         // creamos una variable la cual se traducira a html
-        contenidop.innerHTML = '<p class="mensaje">Pugs encontrados<br><b>' + this.contador + '/' + this.pugsT + '</b></p>';
+        this.contenidop.innerHTML = '<p class="mensaje">Pugs encontrados<br><b>' + this.contador + '/' + this.pugsT + '</b></p>';
+    };
+    collectpug2(player, pug) {
+        this.pug2.disableBody(true, true);
+        this.contador++;
+        // creamos una variable la cual se traducira a html
+        this.contenidop.innerHTML = '<p class="mensaje">Pugs encontrados<br><b>' + this.contador + '/' + this.pugsT + '</b></p>';
     };
 }  
-

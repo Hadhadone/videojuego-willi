@@ -1,7 +1,12 @@
-// Creamos la primera esena del juego, (PRUEBA)
-class scene1 extends Phaser.Scene {
+// crear la segunda plantilla que diga lo que es head y body en html (Completado)
+// hacer chicos todas las cosas para que el nivel se vea mejor
+// crearle una hitbox a las plataformas de la imagen usando png sin nada y moviendo su setsize
+// poner 2 pugs igualmente en este nivel
+// mostrar de alguna forma la sintaxis que deve de llevar en html
+// crear plataformas para subir y bajar
+class scene3 extends Phaser.Scene {
     constructor(){
-        super({key: "scene1"})
+        super({key: "scene3"})
     }
 
     // carga de archivos
@@ -11,6 +16,7 @@ class scene1 extends Phaser.Scene {
         this.load.image('sky','assets/sky.png');
         this.load.image('ground','assets/ground.png');
         this.load.image('text0','assets/hello.png');
+        this.load.image('htmlhb','assets/headandbody.gif')
 
         // spritessheets
         this.load.spritesheet('duderr', 'assets/runr.png', { frameWidth: 250, frameHeight: 82 });
@@ -28,18 +34,29 @@ class scene1 extends Phaser.Scene {
         this.pugsT = 1;
         // creacion del cielo
         this.add.image(0, 0, 'sky').setOrigin(0, 0);
+        this.add.image(420,300,'htmlhb').setScale(1.3)
         // creacion del suelo ademas de crear el arrow plaforms
         this.platforms = this.physics.add.staticGroup();
         this.platforms.create(0, 650, 'ground').setScale(1.85).setSize(0,115).setOffset(385,-25);
-        this.platforms.create(50, 350, 'ground').setScale(0.3).setSize(275,20).setOffset(325,22);
-        this.platforms.create(300, 500, 'ground').setScale(0.3).setSize(275,20).setOffset(325,22);
-        // creacion del texto que dara la bienvenida al primer nivel
-        this.platforms.create(645, 435, 'text0').setScale(1).setSize(403, 345).setOffset(0, 20);
+        this.platforms.create(-100, 805).setScale(1).setSize(320,135).setOffset(350,-510);
+        this.platforms.create(265, 750).setScale(1).setSize(210,100).setOffset(350,-510);
 
+        this.plataformaY = this.physics.add.image(100, 100, 'ground').setImmovable(true);
+        this.plataformaY.setScale(0.5).setSize(300, 20);
+        this.plataformaY.body.allowGravity = false;
         
+        // Animación plataforma móvil
+        this.tweens.add({
+            targets: this.plataformaY,
+            y: 500,
+            ease: 'Linear',
+            duration: 4000,
+            yoyo: true,
+            repeat: -1
+        });
         // creamos un objeto inmovible para la puerta y poder interactuar con ella
-        this.door = this.physics.add.sprite(700, 182, 'door').setImmovable(true);
-        this.door.setScale(0.7);
+        this.door = this.physics.add.sprite(750, 175, 'door').setImmovable(true);
+        this.door.setScale(0.5);
         this.door.body.allowGravity = false;
         
 
@@ -49,7 +66,7 @@ class scene1 extends Phaser.Scene {
         this.player.setBounce(0.2);
 
         // creamos al pug como objeto coleccionable
-        this.pug = this.physics.add.sprite(400, 574 , 'pug').setScale(2);
+        this.pug = this.physics.add.sprite(400, 574 , 'pug').setScale(1.5);
         this.pug.body.allowGravity = false;
         this.pug.setBounce(0);
 
@@ -95,6 +112,7 @@ class scene1 extends Phaser.Scene {
         // creamos las conexiones de colision
         this.physics.add.collider(this.door, this.platforms);
         this.physics.add.collider(this.player, this.platforms);
+        this.physics.add.collider(this.player, this.plataformaY);
 
         // Detectar cuando el jugador toca al pug
         this.physics.add.overlap(this.player, this.pug, this.collectpug, null, this);
@@ -142,6 +160,9 @@ class scene1 extends Phaser.Scene {
         }
         
     }
+        if (this.player.body.touching.down && this.plataformaY.body.touching.up && this.player.y < this.plataformaY.y) {
+            this.player.y += this.plataformaY.body.velocity.y * this.game.loop.delta / 1000;
+        }
     }
     // función para recolectar el pug
     collectpug(player, pug) {
